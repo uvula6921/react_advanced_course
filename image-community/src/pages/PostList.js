@@ -3,9 +3,9 @@ import Post from "../components/Post";
 
 const PostList = (props) => {
   return (
-    <>
+    <React.Fragment>
       <Post></Post>
-    </>
+    </React.Fragment>
   );
 };
 
