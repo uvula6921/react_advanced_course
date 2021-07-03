@@ -2,23 +2,43 @@ import React from "react";
 import styled from "styled-components";
 import { Text, Grid } from "./index";
 
-const Input = ({ label, placeholer, _onChange, type }) => {
+const Input = ({ label, placeholder, _onChange, type, multiLine }) => {
+  if (multiLine) {
+    return (
+      <Grid>
+        {label && <Text margin="0">{label}</Text>}
+        <ElTextarea
+          placeholder={placeholder}
+          onChange={_onChange}
+          rows={10}
+        ></ElTextarea>
+      </Grid>
+    );
+  }
   return (
-    <React.Fragment>
-      <Text margin="0">{label}</Text>
-      <ElInput placeholder={placeholer} onChange={_onChange} type={type} />
-    </React.Fragment>
+    <Grid>
+      {label && <Text margin="0">{label}</Text>}
+      <ElInput placeholder={placeholder} onChange={_onChange} type={type} />
+    </Grid>
   );
 };
 
 Input.defaultProps = {
-  label: "텍스트",
-  placeholer: "텍스트를 입력해주세요.",
+  label: false,
+  placeholder: "텍스트를 입력해주세요.",
   _onChange: () => {},
   type: "text",
+  multiLine: false,
 };
 
 const ElInput = styled.input`
+  border: 1px solid #212121;
+  width: 100%;
+  padding: 12px 4px;
+  box-sizing: border-box;
+`;
+
+const ElTextarea = styled.textarea`
   border: 1px solid #212121;
   width: 100%;
   padding: 12px 4px;

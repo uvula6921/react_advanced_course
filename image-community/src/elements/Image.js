@@ -19,7 +19,6 @@ const Image = ({ shape, src, size }) => {
       </AspectOutter>
     );
   }
-  return <div className="App"></div>;
 };
 
 Image.defaultProps = {

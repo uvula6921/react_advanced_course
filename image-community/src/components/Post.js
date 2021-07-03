@@ -7,7 +7,7 @@ const Post = (props) => {
     <React.Fragment>
       {/* Grid는 다양한 모양으로 변신할 수 있도록 props 종류들을 만들어두고 Post.js에서 Grid에 필요한 props만 넘겨주면서 이용한다. */}
       <Grid>
-        <Grid is_flex>
+        <Grid padding="0 16px" is_flex>
           {/* 헤더 */}
           <Image shape="circle" src={props.src}></Image>
           <Text bold>{props.user_info.user_name}</Text>
