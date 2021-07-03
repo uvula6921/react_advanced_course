@@ -4,7 +4,7 @@ import styled from "styled-components";
 const Button = ({ text, _onClick }) => {
   return (
     <React.Fragment>
-      <ElButton _onClick={_onClick}>{text}</ElButton>
+      <ElButton onClick={_onClick}>{text}</ElButton>
     </React.Fragment>
   );
 };
