@@ -2,11 +2,11 @@ import React from "react";
 import styled from "styled-components";
 import { Text, Grid } from "./index";
 
-const Input = ({ label, placeholer, _onChange }) => {
+const Input = ({ label, placeholer, _onChange, type }) => {
   return (
     <React.Fragment>
       <Text margin="0">{label}</Text>
-      <ElInput placeholder={placeholer} onChange={_onChange} />
+      <ElInput placeholder={placeholer} onChange={_onChange} type={type} />
     </React.Fragment>
   );
 };
@@ -15,6 +15,7 @@ Input.defaultProps = {
   label: "텍스트",
   placeholer: "텍스트를 입력해주세요.",
   _onChange: () => {},
+  type: "text",
 };
 
 const ElInput = styled.input`

@@ -25,10 +25,6 @@ const Post = (props) => {
           {/* 댓글 */}
           <Text bold>댓글 {props.comment_cnt}개</Text>
         </Grid>
-        <div>user profile / user name / inser_dt / is_me (edit btn)</div>
-        <div>contents</div>
-        <div>image</div>
-        <div>comment cnt</div>
       </Grid>
     </React.Fragment>
   );
