@@ -8,8 +8,9 @@ import firebase from "firebase/app";
 const user_initial = {
   user_name: "bbakyong",
 };
+// initialState
 const initialState = {
-  user: user_initial,
+  user: null,
   is_login: false,
 };
 
@@ -34,7 +35,7 @@ const loginFB = (id, pwd) => {
             setUser({
               id: id,
               user_name: user.user.displayName,
-              user_profile: "",
+              user_profile: null,
               uid: user.user.user_uid,
             })
           );
@@ -65,7 +66,7 @@ const signupFB = (id, pwd, user_name) => {
               setUser({
                 id: id,
                 user_name: user_name,
-                user_profile: "",
+                user_profile: null,
                 uid: user.user.user_uid,
               })
             );
@@ -94,7 +95,7 @@ const loginCheckFB = () => {
         dispatch(
           setUser({
             user_name: user.displayName,
-            user_profile: "",
+            user_profile: null,
             id: user.email,
             uid: user.uid,
           })

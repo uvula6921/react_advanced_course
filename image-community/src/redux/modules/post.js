@@ -1,9 +1,10 @@
 import { createAction, handleActions } from "redux-actions";
 import { produce } from "immer";
 import defaultImage from "../../default_image.jpeg";
-import { firestore } from "../../shared/firebase";
+import { firestore, storage } from "../../shared/firebase";
 import "moment";
 import moment from "moment";
+import { actionCreators as imageAction } from "./image";
 
 // initial state
 const initialPost = {
@@ -96,17 +97,41 @@ const addPostFB = (contents = "") => {
       insert_dt: moment().format("YYYY-MM-DD hh:mm:ss"),
     };
 
-    PostDB.add({ ...user_info, ..._post })
-      .then((doc) => {
-        let post = { user_info, ..._post, id: doc.id };
-        // {user_info} 이렇게 넣으면 알아서
-        // {user_info: {user_name: _user.user_name, user_id: _user.uid, user_profile: _user.user_profile}} 이렇게 됨.
-        dispatch(addPost(post));
-        history.replace("/");
-      })
-      .catch((err) => {
-        console.log("post 작성에 실패했습니다", err);
-      });
+    const _image = getState().image.preview;
+    const _upload = storage
+      .ref(`images/${user_info.user_id}_${new Date().getTime()}`)
+      .putString(_image, "data_url");
+    _upload.then((snapshot) => {
+      // 먼저 이미지를 firebase storage에 올리고
+      snapshot.ref
+        .getDownloadURL()
+        .then((url) => {
+          return url;
+          // 생성된 firebase storage 이미지 주소를 가져와서
+        })
+        .then((url) => {
+          // 그 이미지 주소로 firestore에 저장함.
+          // 이러면 게시글 작성 버튼으로 사진과 글을 한번에 저장할 수 있음.
+          PostDB.add({ ...user_info, ..._post, image_url: url })
+            .then((doc) => {
+              let post = { user_info, ..._post, id: doc.id, image_url: url };
+              // {user_info} 이렇게 넣으면 알아서
+              // {user_info: {user_name: _user.user_name, user_id: _user.uid, user_profile: _user.user_profile}} 이렇게 됨.
+              dispatch(addPost(post));
+              history.replace("/");
+
+              dispatch(imageAction.setPreview(null));
+            })
+            .catch((err) => {
+              window.alert("게시글 작성에 실패했어요.");
+              console.log("post 작성에 실패했습니다.", err);
+            });
+        })
+        .catch((err) => {
+          window.alert("이미지 업로드에 실패했어요.");
+          console.log("앗, 이미지 업로드에 문제가 있어요.");
+        });
+    });
   };
 };
 

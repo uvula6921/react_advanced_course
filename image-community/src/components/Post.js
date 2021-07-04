@@ -19,7 +19,7 @@ const Post = (props) => {
         </Grid>
         <Grid>
           {/* 메인 이미지 */}
-          <Image shape="rectangle" src={props.user_info.user_profile}></Image>
+          <Image shape="rectangle" src={props.image_url}></Image>
         </Grid>
         <Grid padding="16px">
           {/* 댓글 */}

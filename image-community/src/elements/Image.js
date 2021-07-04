@@ -22,7 +22,7 @@ const Image = ({ shape, src, size }) => {
 };
 
 Image.defaultProps = {
-  shape: "rectangle",
+  shape: "circle",
   src: `${defaultImage}`,
   size: 36,
 };
