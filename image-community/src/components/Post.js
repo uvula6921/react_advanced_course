@@ -9,7 +9,7 @@ const Post = (props) => {
       <Grid>
         <Grid padding="0 16px" is_flex>
           {/* 헤더 */}
-          <Image shape="circle" src={props.src}></Image>
+          <Image shape="circle" src={props.image_url}></Image>
           <Text bold>{props.user_info.user_name}</Text>
           <Text>{props.insert_dt}</Text>
         </Grid>
@@ -19,7 +19,7 @@ const Post = (props) => {
         </Grid>
         <Grid>
           {/* 메인 이미지 */}
-          <Image shape="rectangle" src={props.src}></Image>
+          <Image shape="rectangle" src={props.user_info.user_profile}></Image>
         </Grid>
         <Grid padding="16px">
           {/* 댓글 */}

@@ -13,7 +13,7 @@ import { useDispatch } from "react-redux";
 import { apiKey } from "../shared/firebase";
 import Permit from "./Permit";
 import PostWrite from "../pages/PostWrite";
-import PostDetail from "../pages/PostDetil";
+import PostDetail from "../pages/PostDetail";
 
 function App() {
   const dispatch = useDispatch();
