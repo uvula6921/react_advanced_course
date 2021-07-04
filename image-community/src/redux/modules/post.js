@@ -2,18 +2,20 @@ import { createAction, handleActions } from "redux-actions";
 import { produce } from "immer";
 import defaultImage from "../../default_image.jpeg";
 import { firestore } from "../../shared/firebase";
+import "moment";
+import moment from "moment";
 
 // initial state
 const initialPost = {
-  id: 0,
-  user_info: {
-    user_name: "bbakyong",
-    user_profile: `${defaultImage}`,
-  },
+  // id: 0,
+  // user_info: {
+  //   user_name: "bbakyong",
+  //   user_profile: `${defaultImage}`,
+  // },
   image_url: `${defaultImage}`,
-  contents: "사란짠",
-  comment_cnt: 10,
-  insert_dt: "2021-07-02 16:12:00",
+  contents: "",
+  comment_cnt: 0,
+  insert_dt: moment().format("YYYY-MM-DD hh:mm:ss"),
 };
 
 const initialState = {
@@ -79,6 +81,35 @@ const getPostFB = () => {
   };
 };
 
+const addPostFB = (contents = "") => {
+  return function (dispatch, getState, { history }) {
+    const PostDB = firestore.collection("image_community");
+    const _user = getState().user.user;
+    const user_info = {
+      user_name: _user.user_name,
+      user_id: _user.uid,
+      user_profile: _user.user_profile,
+    };
+    const _post = {
+      ...initialPost,
+      contents: contents,
+      insert_dt: moment().format("YYYY-MM-DD hh:mm:ss"),
+    };
+
+    PostDB.add({ ...user_info, ..._post })
+      .then((doc) => {
+        let post = { user_info, ..._post, id: doc.id };
+        // {user_info} 이렇게 넣으면 알아서
+        // {user_info: {user_name: _user.user_name, user_id: _user.uid, user_profile: _user.user_profile}} 이렇게 됨.
+        dispatch(addPost(post));
+        history.replace("/");
+      })
+      .catch((err) => {
+        console.log("post 작성에 실패했습니다", err);
+      });
+  };
+};
+
 // reducer using handle actions, immer
 export default handleActions(
   {
@@ -87,7 +118,10 @@ export default handleActions(
         draft.list = action.payload.post_list;
       }),
 
-    [ADD_POST]: (state, action) => produce(state, (draft) => {}),
+    [ADD_POST]: (state, action) =>
+      produce(state, (draft) => {
+        draft.list.unshift(action.payload.post);
+      }),
   },
   initialState
 );
@@ -96,5 +130,6 @@ const actionCreators = {
   setPost,
   addPost,
   getPostFB,
+  addPostFB,
 };
 export { actionCreators };

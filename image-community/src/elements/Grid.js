@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-const Grid = ({ is_flex, width, margin, padding, bg, children }) => {
+const Grid = ({ is_flex, width, margin, padding, bg, children, center }) => {
   const styled = {
     // style에 쓰이는 props만 따로 모아준다,
     is_flex: is_flex,
@@ -9,6 +9,7 @@ const Grid = ({ is_flex, width, margin, padding, bg, children }) => {
     margin: margin,
     padding: padding,
     bg: bg,
+    center: center,
   };
 
   return (
@@ -28,6 +29,7 @@ Grid.defaultProps = {
   padding: false,
   margin: false,
   bg: false,
+  center: false,
 };
 
 const GridBox = styled.div`
@@ -41,6 +43,7 @@ const GridBox = styled.div`
     props.is_flex
       ? `display: flex; align-items: center; justify-content: space-between`
       : ""};
+  ${(props) => (props.center ? `text-align: center;` : "")};
 `;
 
 export default Grid;
