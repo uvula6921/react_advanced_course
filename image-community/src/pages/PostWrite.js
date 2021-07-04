@@ -12,6 +12,7 @@ const PostWrite = (props) => {
   const changeContents = (e) => {
     setContents(e.target.value);
   };
+  const preview = useSelector((state) => state.image.preview);
 
   if (!is_login) {
     return (
@@ -45,7 +46,10 @@ const PostWrite = (props) => {
           </Text>
         </Grid>
 
-        <Image shape="rectangle" />
+        <Image
+          shape="rectangle"
+          src={preview ? preview : "https://via.placeholder.com/400x300"}
+        />
       </Grid>
 
       <Grid padding="16px">
