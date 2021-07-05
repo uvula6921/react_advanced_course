@@ -2,7 +2,16 @@ import React from "react";
 import styled from "styled-components";
 import { Text, Grid } from "./index";
 
-const Input = ({ label, placeholder, _onChange, type, multiLine, value }) => {
+const Input = ({
+  label,
+  placeholder,
+  _onChange,
+  type,
+  multiLine,
+  value,
+  is_Submit,
+  onSubmit,
+}) => {
   if (multiLine) {
     return (
       <Grid>
@@ -16,10 +25,25 @@ const Input = ({ label, placeholder, _onChange, type, multiLine, value }) => {
       </Grid>
     );
   }
+
   return (
     <Grid>
       {label && <Text margin="0">{label}</Text>}
-      <ElInput placeholder={placeholder} onChange={_onChange} type={type} />
+      {is_Submit ? (
+        <ElInput
+          placeholder={placeholder}
+          onChange={_onChange}
+          type={type}
+          value={value}
+          onKeyPress={(e) => {
+            if (e.key === "Enter") {
+              onSubmit();
+            }
+          }}
+        />
+      ) : (
+        <ElInput placeholder={placeholder} onChange={_onChange} type={type} />
+      )}
     </Grid>
   );
 };
@@ -31,6 +55,8 @@ Input.defaultProps = {
   type: "text",
   multiLine: false,
   value: "",
+  is_Submit: false,
+  onSubmit: () => {},
 };
 
 const ElInput = styled.input`

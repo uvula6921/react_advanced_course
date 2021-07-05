@@ -3,6 +3,8 @@ import { produce } from "immer";
 import { firestore } from "../../shared/firebase";
 import "moment";
 import moment from "moment";
+import firebase from "firebase/app";
+import { actionCreators as postActions } from "./post";
 
 const initialState = {
   list: {},
@@ -24,6 +26,45 @@ const addComment = createAction(ADD_COMMENT, (post_id, comment) => ({
 
 const loading = createAction(LOADING, (is_loading) => ({ is_loading }));
 
+const addCommentFB = (post_id, contents) => {
+  return function (dispatch, getState, { history }) {
+    const commentDB = firestore.collection("comment");
+    const user_info = getState().user.user;
+
+    let comment = {
+      post_id: post_id,
+      user_id: user_info.uid,
+      user_name: user_info.user_name,
+      user_profile: user_info.user_profile,
+      contents: contents,
+      insert_dt: moment().format("YYYY-MM-DD hh:mm:ss"),
+    };
+
+    commentDB.add(comment).then((doc) => {
+      const postDB = firestore.collection("image_community");
+      const post = getState().post.list.find((l) => l.id === post_id);
+      const increment = firebase.firestore.FieldValue.increment(1);
+      // 특정 필드의 value에 값을 더하고 싶을때 이렇게 FieldValue.increment() 쓰면 됨.
+      comment = { ...comment, id: doc.id };
+
+      postDB
+        .doc(post_id)
+        .update({ comment_cnt: increment })
+        .then((_post) => {
+          dispatch(addComment(post_id, comment));
+
+          if (post) {
+            dispatch(
+              postActions.editPost(post_id, {
+                comment_cnt: parseInt(post.comment_cnt) + 1,
+              })
+            );
+          }
+        });
+    });
+  };
+};
+
 const getCommentFB = (post_id) => {
   return function (dispatch, getState, { history }) {
     if (!post_id) {
@@ -42,7 +83,7 @@ const getCommentFB = (post_id) => {
         docs.forEach((doc) => {
           list.push({ ...doc.data(), id: doc.id });
         });
-        // console.log(list);
+
         dispatch(setComment(post_id, list));
       })
       .catch((err) => {
@@ -59,7 +100,10 @@ export default handleActions(
         // comment들을 담는 list를 딕셔너리 형으로 만들고
         // post_id를 key, 해당 post의 comment들(딕셔너리)을 배열 형태로 담은 comment_list를 value로 할당.
       }),
-    [ADD_COMMENT]: (state, action) => produce(state, (draft) => {}),
+    [ADD_COMMENT]: (state, action) =>
+      produce(state, (draft) => {
+        draft.list[action.payload.post_id].unshift(action.payload.comment);
+      }),
     [LOADING]: (state, action) =>
       produce(state, (draft) => {
         draft.is_loading = action.payload.is_loading;
@@ -72,6 +116,7 @@ const actionCreators = {
   getCommentFB,
   setComment,
   addComment,
+  addCommentFB,
 };
 
 export { actionCreators };
