@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { Text, Grid } from "./index";
 
-const Input = ({ label, placeholder, _onChange, type, multiLine }) => {
+const Input = ({ label, placeholder, _onChange, type, multiLine, value }) => {
   if (multiLine) {
     return (
       <Grid>
@@ -11,6 +11,7 @@ const Input = ({ label, placeholder, _onChange, type, multiLine }) => {
           placeholder={placeholder}
           onChange={_onChange}
           rows={10}
+          value={value}
         ></ElTextarea>
       </Grid>
     );
@@ -29,6 +30,7 @@ Input.defaultProps = {
   _onChange: () => {},
   type: "text",
   multiLine: false,
+  value: "",
 };
 
 const ElInput = styled.input`

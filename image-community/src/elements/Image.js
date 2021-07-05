@@ -19,10 +19,15 @@ const Image = ({ shape, src, size }) => {
       </AspectOutter>
     );
   }
+  return (
+    <>
+      <ImageDefault {...styles}></ImageDefault>
+    </>
+  );
 };
 
 Image.defaultProps = {
-  shape: "circle",
+  shape: "",
   src: `${defaultImage}`,
   size: 36,
 };
@@ -37,6 +42,15 @@ const ImageCircle = styled.div`
   background-image: url("${(props) => props.src}");
   background-size: cover;
   margin: 4px;
+`;
+
+const ImageDefault = styled.div`
+  --size: ${(props) => props.size}px;
+  // css 값을 변수화해서
+  width: var(--size); // 이렇게 불러서 사용함
+  height: var(--size);
+  background-image: url("${(props) => props.src}");
+  background-size: cover;
 `;
 
 const AspectOutter = styled.div`

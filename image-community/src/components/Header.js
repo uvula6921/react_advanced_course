@@ -22,7 +22,7 @@ const Header = (props) => {
         </Grid>
         <Grid is_flex>
           <Button text="내 정보"></Button>
-          <Button text="알림"></Button>
+          <Button _onClick={() => history.push("/noti")} text="알림"></Button>
           <Button
             text="로그아웃"
             _onClick={() => {
