@@ -29,8 +29,8 @@ const PostDetail = (props) => {
           is_me={post.user_info.user_id === user_info?.uid ? true : false}
         />
       )}
-      <CommentWrite />
-      <CommentList />
+      <CommentWrite post_id={id} />
+      <CommentList post_id={id} />
     </React.Fragment>
   );
 };

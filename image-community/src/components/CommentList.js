@@ -1,19 +1,38 @@
 import React from "react";
 import { Grid, Image, Text } from "../elements";
+import { useDispatch, useSelector } from "react-redux";
+import { actionCreators as commentActions } from "../redux/modules/comment";
 
-const CommentList = () => {
+const CommentList = (props) => {
+  const dispatch = useDispatch();
+  const comment_list = useSelector((state) => state.comment.list);
+  const { post_id } = props;
+
+  React.useEffect(() => {
+    console.log(comment_list);
+    if (!comment_list[post_id]) {
+      dispatch(commentActions.getCommentFB(post_id));
+    }
+  }, []);
+
+  if (!comment_list[post_id] || !post_id) {
+    // 아직 DB에서 데이터가 안넘어왔을때는 오류를 내니까 공백이라도 보여주자.
+    return null;
+  }
+
   return (
     <React.Fragment>
       <Grid padding="16px">
-        <CommentItem />
-        <CommentItem />
-        <CommentItem />
-        <CommentItem />
-        <CommentItem />
-        <CommentItem />
+        {comment_list[post_id].map((c) => {
+          return <CommentItem key={c.id} {...c} />;
+        })}
       </Grid>
     </React.Fragment>
   );
+};
+
+CommentList.defaultProps = {
+  post_id: null,
 };
 
 export default CommentList;
