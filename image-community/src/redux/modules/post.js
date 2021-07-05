@@ -6,6 +6,7 @@ import "moment";
 import moment from "moment";
 import { actionCreators as imageAction } from "./image";
 import { func } from "prop-types";
+import Post from "../../components/Post";
 
 // initial state
 const initialPost = {
@@ -129,6 +130,39 @@ const getPostFB = (start = null, size = 3) => {
   };
 };
 
+const getOnePostFB = (id) => {
+  return function (dispatch, getState, { history }) {
+    // PostDetail.js
+    // 리덕스를 불러와서 사용하는 방식은 /detail 페이지에서 새로고침했을때 리덕스가 날아가기때문에 데이터가 없어짐
+    // 그래서 바로 firestore에서 데이터를 가져와 사용함.
+    const postDB = firestore.collection("image_community");
+    postDB
+      .doc(id)
+      .get()
+      .then((doc) => {
+        let _post = doc.data();
+        let post = Object.keys(_post).reduce(
+          // reduce 쓰는법 참고!!!
+          (acc, cur) => {
+            if (cur.indexOf("user_") !== -1) {
+              return {
+                ...acc,
+                user_info: { ...acc.user_info, [cur]: _post[cur] },
+                // [cur] 이렇게 써야 cur의 변수 값이 들어가짐. 그냥 cur 쓰면 문자열이 들어감...?!
+                // value 가져올때도 _post.cur라고 쓰면 안되고 _post[cur] 라고 써야함
+                // reduce만의 특징인듯?
+              };
+            }
+            return { ...acc, [cur]: _post[cur] };
+          },
+          { id: doc.id, user_info: {} }
+        );
+
+        dispatch(setPost([post]));
+      });
+  };
+};
+
 const editPostFB = (post_id = null, post = {}) => {
   return function (dispatch, getState, { history }) {
     if (!post_id) {
@@ -237,7 +271,21 @@ export default handleActions(
     [SET_POST]: (state, action) =>
       produce(state, (draft) => {
         draft.list.push(...action.payload.post_list);
-        draft.paging = action.payload.paging;
+        draft.list = draft.list.reduce((acc, cur) => {
+          // getPostFB, getOnePostFB 에서 모두 dispatch(setPost)를 사용함
+          // 이로인해 getOnePostFB에서 한번 불러온 post가 getPostFB에서도 불러와질수 있음.
+          // 아래는 이 때문에 중복된걸 제거해주는 로직
+          if (acc.findIndex((a) => a.id === cur.id) === -1) {
+            return [...acc, cur];
+          } else {
+            acc[acc.findIndex((a) => a.id === cur.id)] = cur;
+            return acc;
+          }
+        }, []);
+
+        if (action.payload.paging) {
+          draft.paging = action.payload.paging;
+        }
         draft.is_loading = false;
       }),
 
@@ -265,5 +313,6 @@ const actionCreators = {
   getPostFB,
   addPostFB,
   editPostFB,
+  getOnePostFB,
 };
 export { actionCreators };
