@@ -22,69 +22,110 @@ const initialPost = {
 
 const initialState = {
   list: [],
+  paging: { start: null, next: null, size: 3 },
+  is_loading: false,
 };
 
 // actions
 const SET_POST = "SET_POST";
 const ADD_POST = "ADD_POST";
 const EDIT_POST = "EDIT_POST";
+const LOADING = "LOADING";
 
 // action creators
-const setPost = createAction(SET_POST, (post_list) => ({ post_list }));
+const setPost = createAction(SET_POST, (post_list, paging) => ({
+  post_list,
+  paging,
+}));
 const addPost = createAction(ADD_POST, (post) => ({ post }));
 const editPost = createAction(EDIT_POST, (post_id, post) => ({
   post_id,
   post,
 }));
+const loading = createAction(LOADING, (is_loading) => ({ is_loading }));
 
 // middleware actions
-const getPostFB = () => {
+const getPostFB = (start = null, size = 3) => {
   return function (dispatch, getState, { history }) {
+    let _paging = getState().post.paging;
+    if (_paging.start && !_paging.next) {
+      // 시작정보가 기록되었는데 다음 가져올 데이터가 없다면? 앗, 리스트가 끝났겠네요!
+      // 그럼 아무것도 하지말고 return을 해야죠!
+      return;
+    }
+    dispatch(loading(true));
     const postDB = firestore.collection("image_community");
-    postDB.get().then((docs) => {
-      let post_list = [];
-      docs.forEach((doc) => {
-        let _post = doc.data();
 
-        let post = Object.keys(_post).reduce(
-          // reduce 쓰는법 참고!!!
-          (acc, cur) => {
-            if (cur.indexOf("user_") !== -1) {
-              return {
-                ...acc,
-                user_info: { ...acc.user_info, [cur]: _post[cur] },
-                // [cur] 이렇게 써야 cur의 변수 값이 들어가짐. 그냥 cur 쓰면 문자열이 들어감...?!
-                // value 가져올때도 _post.cur라고 쓰면 안되고 _post[cur] 라고 써야함
-                // reduce만의 특징인듯?
-              };
-            }
-            return { ...acc, [cur]: _post[cur] };
-          },
-          { id: doc.id, user_info: {} }
-        );
+    let query = postDB.orderBy("insert_dt", "desc");
+    if (start) {
+      query = query.startAt(start);
+    }
 
-        // let _post = {
-        //   id: doc.id,
-        //   ...doc.data()
-        // }
-        // let post = {
-        //   id: doc.id,
-        //   user_info: {
-        //     user_name: _post.user_name,
-        //     user_profile: _post.user_profile,
-        //     user_id: _post.user_id,
-        //   },
-        //   image_url: _post.image_url,
-        //   contents: _post.contents,
-        //   comment_cnt: _post.comment_cnt,
-        //   insert_dt: _post.insert_dt,
-        // };
+    query
+      .limit(size + 1)
+      // 사이즈보다 1개 더 크게 가져옵시다.
+      // 3개씩 끊어서 보여준다고 할 때, 4개를 가져올 수 있으면? 앗 다음 페이지가 있겠네하고 알 수 있으니까요.
+      // 만약 4개 미만이라면? 다음 페이지는 없겠죠! :)
+      .get()
+      .then((docs) => {
+        let post_list = [];
+        let paging = {
+          // 시작점에는 새로 가져온 정보의 시작점을 넣고,
+          // next에는 마지막 항목을 넣습니다.
+          // (이 next가 다음번 리스트 호출 때 start 파라미터로 넘어올거예요.)
+          start: docs.docs[0],
+          next:
+            docs.docs.length === size + 1
+              ? docs.docs[docs.docs.length - 1]
+              : null,
+          size: size,
+        };
 
-        post_list.push(post);
+        docs.forEach((doc) => {
+          let _post = doc.data();
+
+          let post = Object.keys(_post).reduce(
+            // reduce 쓰는법 참고!!!
+            (acc, cur) => {
+              if (cur.indexOf("user_") !== -1) {
+                return {
+                  ...acc,
+                  user_info: { ...acc.user_info, [cur]: _post[cur] },
+                  // [cur] 이렇게 써야 cur의 변수 값이 들어가짐. 그냥 cur 쓰면 문자열이 들어감...?!
+                  // value 가져올때도 _post.cur라고 쓰면 안되고 _post[cur] 라고 써야함
+                  // reduce만의 특징인듯?
+                };
+              }
+              return { ...acc, [cur]: _post[cur] };
+            },
+            { id: doc.id, user_info: {} }
+          );
+
+          // let _post = {
+          //   id: doc.id,
+          //   ...doc.data()
+          // }
+          // let post = {
+          //   id: doc.id,
+          //   user_info: {
+          //     user_name: _post.user_name,
+          //     user_profile: _post.user_profile,
+          //     user_id: _post.user_id,
+          //   },
+          //   image_url: _post.image_url,
+          //   contents: _post.contents,
+          //   comment_cnt: _post.comment_cnt,
+          //   insert_dt: _post.insert_dt,
+          // };
+
+          post_list.push(post);
+        });
+        if (docs.docs.length === size + 1) {
+          post_list.pop();
+        }
+
+        dispatch(setPost(post_list, paging));
       });
-
-      dispatch(setPost(post_list));
-    });
   };
 };
 
@@ -195,7 +236,9 @@ export default handleActions(
   {
     [SET_POST]: (state, action) =>
       produce(state, (draft) => {
-        draft.list = action.payload.post_list;
+        draft.list.push(...action.payload.post_list);
+        draft.paging = action.payload.paging;
+        draft.is_loading = false;
       }),
 
     [ADD_POST]: (state, action) =>
@@ -206,6 +249,10 @@ export default handleActions(
       produce(state, (draft) => {
         let idx = draft.list.findIndex((p) => p.id === action.payload.post_id);
         draft.list[idx] = { ...draft.list[idx], ...action.payload.post };
+      }),
+    [LOADING]: (state, action) =>
+      produce(state, (draft) => {
+        draft.is_loading = action.payload.is_loading;
       }),
   },
   initialState
