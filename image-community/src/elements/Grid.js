@@ -1,7 +1,16 @@
 import React from "react";
 import styled from "styled-components";
 
-const Grid = ({ is_flex, width, margin, padding, bg, children, center }) => {
+const Grid = ({
+  is_flex,
+  width,
+  margin,
+  padding,
+  bg,
+  children,
+  center,
+  _onClick,
+}) => {
   const styled = {
     // style에 쓰이는 props만 따로 모아준다,
     is_flex: is_flex,
@@ -14,7 +23,9 @@ const Grid = ({ is_flex, width, margin, padding, bg, children, center }) => {
 
   return (
     <React.Fragment>
-      <GridBox {...styled}>{children}</GridBox>
+      <GridBox {...styled} onClick={_onClick}>
+        {children}
+      </GridBox>
       {/* {children}: Post.js에서  <Text>{props.contents}</Text> 처럼 컴포넌트 자식으로 있는 부분을 가져와줌 */}
       {/* 이거도 props를 불러오는것이기때문에 컴포넌트 상단에서 비구조 할당 선언에 children이 있음. */}
     </React.Fragment>
@@ -30,6 +41,7 @@ Grid.defaultProps = {
   margin: false,
   bg: false,
   center: false,
+  _onClick: () => {},
 };
 
 const GridBox = styled.div`

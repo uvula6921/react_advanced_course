@@ -3,6 +3,7 @@ import Post from "../components/Post";
 import { useDispatch, useSelector } from "react-redux";
 import { actionCreators as postActions } from "../redux/modules/post";
 import InfinityScroll from "../shared/InfinityScroll";
+import { Grid } from "../elements";
 
 const PostList = (props) => {
   const dispatch = useDispatch();
@@ -10,6 +11,7 @@ const PostList = (props) => {
   const user_info = useSelector((state) => state.user.user);
   const is_loading = useSelector((state) => state.post.is_loading);
   const paging = useSelector((state) => state.post.paging);
+  const history = props.history;
 
   React.useEffect(() => {
     if (post_list.length === 0) {
@@ -18,22 +20,44 @@ const PostList = (props) => {
   }, []);
   return (
     <React.Fragment>
-      <InfinityScroll
-        callNext={() => {
-          dispatch(postActions.getPostFB(paging.next));
-        }}
-        is_next={paging.next ? true : false}
-        loading={is_loading}
-      >
-        {post_list.map((p, idx) => {
-          if (p.user_info.user_id === user_info?.uid) {
-            return <Post key={p.id} {...p} is_me></Post>;
-          } else {
-            return <Post key={p.id} {...p}></Post>;
-          }
-          // p에 있는 각 key, value를 한 번에 props로 넘겨줄때 {...p} 이렇게 쓰면 되네...?
-        })}
-      </InfinityScroll>
+      <Grid bg={"#EFF6FF"} padding="20px 0">
+        <InfinityScroll
+          callNext={() => {
+            dispatch(postActions.getPostFB(paging.next));
+          }}
+          is_next={paging.next ? true : false}
+          loading={is_loading}
+        >
+          {post_list.map((p, idx) => {
+            if (p.user_info.user_id === user_info?.uid) {
+              return (
+                <Grid
+                  bg={"#fff"}
+                  key={p.id}
+                  _onClick={() => {
+                    history.push(`/post/${p.id}`);
+                  }}
+                >
+                  <Post {...p} is_me></Post>
+                </Grid>
+              );
+            } else {
+              return (
+                <Grid
+                  bg={"#fff"}
+                  key={p.id}
+                  _onClick={() => {
+                    history.push(`/post/${p.id}`);
+                  }}
+                >
+                  <Post {...p}></Post>
+                </Grid>
+              );
+            }
+            // p에 있는 각 key, value를 한 번에 props로 넘겨줄때 {...p} 이렇게 쓰면 되네...?
+          })}
+        </InfinityScroll>
+      </Grid>
     </React.Fragment>
   );
 };
